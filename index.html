@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD App</title>
+</head>
+<body>
+
+<h2>User CRUD</h2>
+
+<input type="text" id="name" placeholder="Enter name">
+<button id="addBtn">Add</button>
+
+<ul id="list"></ul>
+
+<script>
+// ADD USER
+document.getElementById("addBtn").addEventListener("click", async function () {
+
+  let name = document.getElementById("name").value;
+
+  if (!name) {
+    alert("Enter name");
+    return;
+  }
+
+  await fetch("/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name: name })
+  });
+
+  document.getElementById("name").value = "";
+  getUsers();
+});
+
+// GET USERS
+async function getUsers() {
+  let res = await fetch("/users");
+  let data = await res.json();
+
+  let list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach((user, index) => {
+    let li = document.createElement("li");
+
+    li.innerHTML = `
+      ${user.name}
+      <button onclick="deleteUser(${index})">Delete</button>
+      <button onclick="updateUser(${index})">Update</button>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+// DELETE
+async function deleteUser(id) {
+  await fetch("/users/" + id, {
+    method: "DELETE"
+  });
+  getUsers();
+}
+
+// UPDATE
+async function updateUser(id) {
+  let newName = prompt("Enter new name");
+
+  if (!newName) return;
+
+  await fetch("/users/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name: newName })
+  });
+
+  getUsers();
+}
+
+// PAGE LOAD
+getUsers();
+</script>
+
+</body>
+</html>
